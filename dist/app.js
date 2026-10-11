@@ -1,0 +1,43 @@
+(() => {
+  const STORAGE_KEY = 'picture-diary-365-v1';
+  const defaultDate = new Date().toISOString().slice(0, 10);
+  const initial = { current: 0, cover: { image: '', title: 'わたしの<br><span>絵日記</span>', subtitle: '写真とことばでつづる、<br>365日。', name: 'YOUR NAME' }, entries: {} };
+  let state = load();
+  let editing = false;
+  let recognition = null;
+
+  const $ = (id) => document.getElementById(id);
+  const coverPage = $('coverPage'), entryPage = $('entryPage');
+
+  function load() { try { return { ...initial, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; } catch { return initial; } }
+  function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); $('saveState').textContent = '保存しました'; setTimeout(() => $('saveState').textContent = '自動保存されます', 1300); updateProgress(); }
+  function currentEntry() { const i = state.current; state.entries[i] ||= { date: i === 1 ? defaultDate : '', text: '', image: '' }; return state.entries[i]; }
+  function showPage(index) {
+    state.current = Math.max(0, Math.min(365, index));
+    coverPage.classList.toggle('hidden', state.current !== 0); entryPage.classList.toggle('hidden', state.current === 0);
+    $('dayLabel').textContent = state.current === 0 ? '表紙' : `DAY ${String(state.current).padStart(2, '0')}`;
+    $('footerPage').textContent = state.current === 0 ? 'COVER' : `${String(state.current).padStart(2, '0')} / 365`;
+    $('footerHint').textContent = state.current === 0 ? '表紙からはじめよう' : '今日のページを残そう';
+    if (state.current > 0) renderEntry(); else renderCover();
+    $('prevButton').disabled = state.current === 0; $('nextButton').textContent = state.current === 365 ? '✓' : '→';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function renderCover() { $('coverTitle').innerHTML = state.cover.title; $('coverSubtitle').innerHTML = state.cover.subtitle; $('coverName').textContent = state.cover.name; setImage($('coverDrop'), state.cover.image); }
+  function renderEntry() { const e = currentEntry(); $('entryNumber').textContent = String(state.current).padStart(2, '0'); $('dateInput').value = e.date || ''; $('entryText').value = e.text || ''; setImage($('entryDrop'), e.image); }
+  function setImage(zone, src) { zone.classList.toggle('has-image', !!src); const img = zone.querySelector('img'); if (img) img.src = src || ''; }
+  function readImage(file, callback) { if (!file || !file.type.startsWith('image/')) return toast('画像ファイルを選んでください'); if (file.size > 8 * 1024 * 1024) return toast('画像は8MB以内にしてください'); const reader = new FileReader(); reader.onload = () => callback(reader.result); reader.readAsDataURL(file); }
+  function attachImage(input, zone, save) { input.addEventListener('change', () => readImage(input.files[0], src => { save(src); setImage(zone, src); persist(); toast('写真を保存しました'); })); zone.addEventListener('click', () => input.click()); ['dragenter','dragover'].forEach(t => zone.addEventListener(t, e => { e.preventDefault(); zone.classList.add('dragging'); })); ['dragleave','drop'].forEach(t => zone.addEventListener(t, e => { e.preventDefault(); zone.classList.remove('dragging'); })); zone.addEventListener('drop', e => readImage(e.dataTransfer.files[0], src => { save(src); setImage(zone, src); persist(); toast('写真を保存しました'); })); }
+  function updateProgress() { const written = Object.values(state.entries).filter(e => e && (e.text?.trim() || e.image)).length; $('progressText').textContent = `${written} / 365 日`; $('progressBar').style.width = `${Math.min(100, written / 365 * 100)}%`; }
+  function toast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2200); }
+  function setEditing(value) { editing = value; $('editToggle').textContent = editing ? '編集を終了' : '編集する'; [$('coverTitle'), $('coverSubtitle'), $('coverName')].forEach(el => el.contentEditable = editing); if (editing) toast('表紙の文字をクリックして編集できます'); }
+
+  $('prevButton').addEventListener('click', () => { showPage(state.current - 1); persist(); }); $('nextButton').addEventListener('click', () => { showPage(state.current === 365 ? 0 : state.current + 1); persist(); });
+  $('editToggle').addEventListener('click', () => setEditing(!editing));
+  $('printButton').addEventListener('click', () => { toast('印刷ダイアログから「PDFに保存」を選べます'); setTimeout(() => window.print(), 450); });
+  $('dateInput').addEventListener('input', e => { currentEntry().date = e.target.value; persist(); }); $('entryText').addEventListener('input', e => { currentEntry().text = e.target.value; persist(); });
+  [$('coverTitle'), $('coverSubtitle'), $('coverName')].forEach((el, i) => el.addEventListener('input', () => { state.cover[['title','subtitle','name'][i]] = i < 2 ? el.innerHTML : el.textContent; persist(); }));
+  attachImage($('coverInput'), $('coverDrop'), src => state.cover.image = src); attachImage($('entryInput'), $('entryDrop'), src => currentEntry().image = src);
+  $('voiceButton').addEventListener('click', () => { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SpeechRecognition) return toast('このブラウザは音声入力に対応していません'); if (recognition) { recognition.stop(); return; } recognition = new SpeechRecognition(); recognition.lang = 'ja-JP'; recognition.interimResults = true; recognition.continuous = false; $('voiceButton').classList.add('listening'); $('voiceStatus').textContent = '聞き取り中…'; recognition.onresult = e => { const transcript = [...e.results].map(r => r[0].transcript).join(''); $('entryText').value = `${$('entryText').value}${transcript}`; currentEntry().text = $('entryText').value; }; recognition.onend = () => { recognition = null; $('voiceButton').classList.remove('listening'); $('voiceStatus').textContent = '音声入力を反映しました'; persist(); }; recognition.onerror = () => { recognition = null; $('voiceButton').classList.remove('listening'); $('voiceStatus').textContent = '音声入力を開始できませんでした'; }; recognition.start(); });
+  renderCover(); showPage(state.current); updateProgress();
+})();
+

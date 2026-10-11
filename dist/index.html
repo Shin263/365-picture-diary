@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="写真とことばで残す、365日分の絵日記。" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <title>365 絵日記</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./cover-override.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">絵</span><span>365 絵日記</span></div>
+    <div class="top-actions">
+      <button class="button button-ghost" id="editToggle" type="button">編集する</button>
+      <button class="button button-outline" id="printButton" type="button">PDF保存</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="hero-row">
+      <div>
+        <p class="eyebrow">MY LITTLE YEAR</p>
+        <h1>今日の景色を、<em>明日の宝物</em>に。</h1>
+        <p class="lead">写真とことばで、1年をゆっくり綴る絵日記。</p>
+      </div>
+      <div class="progress-card">
+        <div class="progress-label"><span>YEAR PROGRESS</span><strong id="progressText">0 / 365 日</strong></div>
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        <small>書き始めたページがここに積み重なります</small>
+      </div>
+    </section>
+
+    <nav class="day-nav" aria-label="ページ移動">
+      <button class="nav-arrow" id="prevButton" type="button" aria-label="前のページ">←</button>
+      <div class="day-count"><span id="dayLabel">表紙</span><span class="dot">·</span><span>365ページ</span></div>
+      <button class="nav-arrow" id="nextButton" type="button" aria-label="次のページ">→</button>
+    </nav>
+
+    <section id="coverPage" class="paper-page cover-page" aria-label="表紙">
+      <div class="cover-copy">
+        <span class="cover-kicker">MY 365 DAYS</span>
+        <h2 id="coverTitle" contenteditable="false">わたしの<br><span>絵日記</span></h2>
+        <p id="coverSubtitle" contenteditable="false">写真とことばでつづる、<br>365日。</p>
+        <p class="cover-name" id="coverName" contenteditable="false">YOUR NAME</p>
+      </div>
+      <div class="cover-photo drop-zone" id="coverDrop" data-page="0">
+        <div class="cover-photo-inner"><span class="photo-icon">＋</span><span>写真を入れる</span><small>クリック / ドラッグ&amp;ドロップ</small></div>
+        <img alt="表紙の写真" />
+      </div>
+      <input class="file-input" id="coverInput" type="file" accept="image/*" />
+    </section>
+
+    <section id="entryPage" class="paper-page entry-page hidden" aria-label="絵日記ページ">
+      <div class="entry-header">
+        <div><span class="entry-number" id="entryNumber">01</span><span class="entry-slash">/ 365</span></div>
+        <input id="dateInput" class="date-input" type="date" aria-label="日付" />
+      </div>
+      <div class="entry-rule"></div>
+      <div class="photo-drop drop-zone" id="entryDrop">
+        <div class="photo-placeholder"><span class="photo-icon">＋</span><strong>写真を入れる</strong><span>クリック、またはここにドラッグ</span></div>
+        <img id="entryImage" alt="今日の写真" />
+      </div>
+      <input class="file-input" id="entryInput" type="file" accept="image/*" />
+      <div class="entry-writing">
+        <label for="entryText">今日のできごと</label>
+        <textarea id="entryText" rows="5" placeholder="今日あったこと、感じたことを自由に書いてみよう…"></textarea>
+        <div class="writing-tools"><span id="saveState">自動保存されます</span><button id="voiceButton" class="voice-button" type="button"><span class="mic">●</span> 音声入力</button></div>
+      </div>
+      <p id="voiceStatus" class="voice-status" aria-live="polite"></p>
+    </section>
+
+    <footer class="page-footer"><span>365 絵日記</span><span id="footerHint">表紙からはじめよう</span><span id="footerPage">COVER</span></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
+
