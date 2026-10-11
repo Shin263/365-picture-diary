@@ -2,4 +2,5 @@
 .drop-zone.has-image .remove-image{display:block}
 .remove-image:hover{background:#c85f50}
 .hero-row h1{color:var(--coral)}
+.date-input{font-size:17px;font-weight:600;color:#243434}
 
