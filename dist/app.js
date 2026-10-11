@@ -30,10 +30,27 @@
   function updateProgress() { const written = Object.values(state.entries).filter(e => e && (e.text?.trim() || e.image)).length; $('progressText').textContent = `${written} / 365 日`; $('progressBar').style.width = `${Math.min(100, written / 365 * 100)}%`; }
   function toast(message) { const el = $('toast'); el.textContent = message; el.classList.add('show'); setTimeout(() => el.classList.remove('show'), 2200); }
   function setEditing(value) { editing = value; $('editToggle').textContent = editing ? '編集を終了' : '編集する'; [$('coverTitle'), $('coverSubtitle'), $('coverName')].forEach(el => el.contentEditable = editing); if (editing) toast('表紙の文字をクリックして編集できます'); }
+  function plainCoverText(value) { const box = document.createElement('div'); box.innerHTML = value || ''; return box.textContent || ''; }
+  function buildPrintBook() {
+    const book = $('printAll'); book.innerHTML = '';
+    const cover = document.createElement('article'); cover.className = 'print-page print-cover';
+    const title = document.createElement('h1'); title.textContent = plainCoverText(state.cover.title); cover.append(title);
+    const subtitle = document.createElement('p'); subtitle.textContent = plainCoverText(state.cover.subtitle); cover.append(subtitle);
+    const name = document.createElement('p'); name.textContent = state.cover.name || ''; cover.append(name);
+    if (state.cover.image) { const img = document.createElement('img'); img.src = state.cover.image; img.alt = '表紙の写真'; cover.append(img); }
+    book.append(cover);
+    for (let i = 1; i <= 365; i++) { const e = state.entries[i] || {}; const page = document.createElement('article'); page.className = 'print-page print-entry';
+      const heading = document.createElement('h2'); heading.textContent = `DAY ${String(i).padStart(2, '0')} / 365`; page.append(heading);
+      const date = document.createElement('div'); date.className = 'print-date'; date.textContent = e.date || '日付未入力'; page.append(date);
+      if (e.image) { const img = document.createElement('img'); img.src = e.image; img.alt = `DAY ${i}の写真`; page.append(img); } else { const empty = document.createElement('div'); empty.className = 'print-placeholder'; page.append(empty); }
+      const label = document.createElement('h3'); label.textContent = '今日のできごと'; page.append(label);
+      const text = document.createElement('p'); text.textContent = e.text || ''; page.append(text); book.append(page); }
+  }
 
   $('prevButton').addEventListener('click', () => { showPage(state.current - 1); persist(); }); $('nextButton').addEventListener('click', () => { showPage(state.current === 365 ? 0 : state.current + 1); persist(); });
   $('editToggle').addEventListener('click', () => setEditing(!editing));
   $('printButton').addEventListener('click', () => { toast('印刷ダイアログから「PDFに保存」を選べます'); setTimeout(() => window.print(), 450); });
+  $('printYearButton').addEventListener('click', () => { buildPrintBook(); toast('1年分のPDF印刷ページを準備しています'); setTimeout(() => window.print(), 650); });
   $('dateInput').addEventListener('input', e => { currentEntry().date = e.target.value; persist(); }); $('entryText').addEventListener('input', e => { currentEntry().text = e.target.value; persist(); });
   [$('coverTitle'), $('coverSubtitle'), $('coverName')].forEach((el, i) => el.addEventListener('input', () => { state.cover[['title','subtitle','name'][i]] = i < 2 ? el.innerHTML : el.textContent; persist(); }));
   attachImage($('coverInput'), $('coverDrop'), src => state.cover.image = src); attachImage($('entryInput'), $('entryDrop'), src => currentEntry().image = src);
