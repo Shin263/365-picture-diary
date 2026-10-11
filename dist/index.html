@@ -8,6 +8,7 @@
   <title>365 絵日記</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="./cover-override.css" />
+  <link rel="stylesheet" href="./image-controls.css" />
 </head>
 <body>
   <header class="topbar">
@@ -48,6 +49,7 @@
       <div class="cover-photo drop-zone" id="coverDrop" data-page="0">
         <div class="cover-photo-inner"><span class="photo-icon">＋</span><span>写真を入れる</span><small>クリック / ドラッグ&amp;ドロップ</small></div>
         <img alt="表紙の写真" />
+        <button class="remove-image" type="button" aria-label="表紙の画像を削除">画像を削除</button>
       </div>
       <input class="file-input" id="coverInput" type="file" accept="image/*" />
     </section>
@@ -61,6 +63,7 @@
       <div class="photo-drop drop-zone" id="entryDrop">
         <div class="photo-placeholder"><span class="photo-icon">＋</span><strong>写真を入れる</strong><span>クリック、またはここにドラッグ</span></div>
         <img id="entryImage" alt="今日の写真" />
+        <button class="remove-image" type="button" aria-label="今日の画像を削除">画像を削除</button>
       </div>
       <input class="file-input" id="entryInput" type="file" accept="image/*" />
       <div class="entry-writing">

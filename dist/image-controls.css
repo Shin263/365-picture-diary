@@ -1,0 +1,4 @@
+.remove-image{display:none;position:absolute;z-index:3;top:14px;right:14px;border:0;border-radius:999px;padding:8px 12px;background:rgba(36,52,52,.82);color:#fff;font:11px "Yusei Magic",sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.drop-zone.has-image .remove-image{display:block}
+.remove-image:hover{background:#c85f50}
+
